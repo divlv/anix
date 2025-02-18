@@ -27,7 +27,7 @@ jobs:
         env:
           DOCKER_METADATA_PR_HEAD_SHA: true
         with:
-          images: ghcr.io/plausible/analytics/ee
+          images: ${{ secrets.DOCKER_HOST }}/${{ secrets.DOCKER_IMAGE_NAME }}
           tags: |
             type=ref,event=pr
             type=ref,event=branch
@@ -40,9 +40,9 @@ jobs:
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v3
         with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          registry: ${{ secrets.DOCKER_HOST }}
+          username: ${{ secrets.DOCKER_LOGIN }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Build and push
         id: docker_build
@@ -59,30 +59,3 @@ jobs:
 
       - name: Image digest
         run: echo ${{ steps.docker_build.outputs.digest }}
-
-      - name: Notify team on failure
-        if: ${{ failure() && github.ref == 'refs/heads/master' }}
-        uses: fjogeleit/http-request-action@v1
-        with:
-          url: ${{ secrets.BUILD_NOTIFICATION_URL }}
-          method: 'POST'
-          customHeaders: '{"Content-Type": "application/json"}'
-          data: '{"content": "<a href=\"https://github.com/plausible/analytics/actions/workflows/build-private-images.yml\">Build failed</a>"}'
-
-      - name: Notify team on success
-        if: ${{ success() && github.ref == 'refs/heads/master' }}
-        uses: fjogeleit/http-request-action@v1
-        with:
-          url: ${{ secrets.BUILD_NOTIFICATION_URL }}
-          method: 'POST'
-          customHeaders: '{"Content-Type": "application/json"}'
-          escapeData: 'true'
-          data: '{"content": "<h1>🚀 New changes are about to be deployed to production!</h1><br/><h3>👷 Author: ${{ github.actor }}</h3><br/><p>📝 Commit message: ${{ github.event.head_commit.message }}</p><br/>"}'
-
-      - name: Set Honeycomb marker on success
-        if: ${{ success() && github.ref == 'refs/heads/master' }}
-        uses: cnkk/honeymarker-action@1bd92aec746e38efe43a0faee94ced1ebb930712
-        with:
-          apikey: ${{ secrets.HONEYCOMB_MARKER_APIKEY }}
-          dataset: 'plausible-prod'
-          message: "${{ github.sha }}"
