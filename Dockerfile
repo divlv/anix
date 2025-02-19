@@ -4,7 +4,7 @@
 #### Builder
 FROM hexpm/elixir:1.17.3-erlang-27.2.1-alpine-3.20.5 AS buildcontainer
 
-ARG MIX_ENV=ce
+ARG MIX_ENV=prod
 
 # preparation
 ENV MIX_ENV=$MIX_ENV
@@ -60,7 +60,7 @@ LABEL maintainer="plausible.io <hello@plausible.io>"
 ARG BUILD_METADATA={}
 ENV BUILD_METADATA=$BUILD_METADATA
 ENV LANG=C.UTF-8
-ARG MIX_ENV=ce
+ARG MIX_ENV=prod
 ENV MIX_ENV=$MIX_ENV
 
 RUN adduser -S -H -u 999 -G nogroup plausible
