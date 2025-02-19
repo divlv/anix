@@ -17,11 +17,11 @@ defmodule Plausible.License do
       if has_valid_license?() do
         :ok
       else
-        Logger.warning(
+        Logger.error(
           "Invalid or no license key provided for Plausible Enterprise Edition. Please contact hello@plausible.io to acquire a license."
         )
 
-        Logger.warning("...but who cares?")
+        Logger.error("...but who cares?")
       end
     end
 
