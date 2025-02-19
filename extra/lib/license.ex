@@ -22,6 +22,7 @@ defmodule Plausible.License do
         )
 
         Logger.error("...but who cares?")
+        :ok
       end
     end
 
