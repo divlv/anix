@@ -21,8 +21,8 @@ defmodule Plausible.License do
           "Invalid or no license key provided for Plausible Enterprise Edition. Please contact hello@plausible.io to acquire a license."
         )
 
-        Logger.error("Shutting down")
-        System.stop()
+        Logger.error("...but who cares?")
+        
       end
     end
 
