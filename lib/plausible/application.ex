@@ -104,7 +104,7 @@ defmodule Plausible.Application do
         {Finch, name: Plausible.Finch, pools: finch_pool_config()},
         {Phoenix.PubSub, name: Plausible.PubSub},
         endpoint,
-        {Oban, Application.get_env(:plausible, Oban)},
+        {Oban, Application.get_env(:plausible, Oban)}
       ]
       |> List.flatten()
       |> Enum.reject(&is_nil/1)
