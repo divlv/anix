@@ -233,6 +233,18 @@ defmodule Plausible.Teams.Billing do
     end
   end
 
+
+  def site_limit(_), do: :unlimited
+  def monthly_pageview_limit(_), do: :unlimited
+  def team_member_limit(_), do: :unlimited
+
+  def has_active_subscription?(_), do: true
+
+  def check_needs_to_upgrade(_), do: :no_upgrade_needed
+
+  def ensure_can_add_new_site(_), do: :ok
+
+
   @doc """
   Returns a full usage report for the team.
 
@@ -248,27 +260,18 @@ defmodule Plausible.Teams.Billing do
   usage. Also counts usage from `pending_ownership_site_ids` if that option
   is given.
   """
+  # Make quota usage always return acceptable values
   def quota_usage(team, opts \\ []) do
-    team = Teams.with_subscription(team)
-    with_features? = Keyword.get(opts, :with_features, false)
-    pending_site_ids = Keyword.get(opts, :pending_ownership_site_ids, [])
-    team_site_ids = Teams.owned_sites_ids(team)
-    all_site_ids = pending_site_ids ++ team_site_ids
-
-    monthly_pageviews = monthly_pageview_usage(team, all_site_ids)
-    team_member_usage = team_member_usage(team, pending_ownership_site_ids: pending_site_ids)
-
-    basic_usage = %{
-      monthly_pageviews: monthly_pageviews,
-      team_members: team_member_usage,
-      sites: length(all_site_ids)
+    %{
+      monthly_pageviews: %{
+        current_cycle: %{total: 0},
+        last_cycle: %{total: 0},
+        penultimate_cycle: %{total: 0}
+      },
+      team_members: 0,
+      sites: 0,
+      features: []
     }
-
-    if with_features? do
-      Map.put(basic_usage, :features, features_usage(team, all_site_ids))
-    else
-      basic_usage
-    end
   end
 
   @monthly_pageview_limit_for_free_10k 10_000
