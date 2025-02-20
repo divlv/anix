@@ -169,14 +169,16 @@ defmodule Plausible.Billing.Feature.Funnels do
   use Plausible.Billing.Feature,
     name: :funnels,
     display_name: "Funnels",
-    toggle_field: :funnels_enabled
+    toggle_field: :funnels_enabled,
+    free: true
 end
 
 defmodule Plausible.Billing.Feature.RevenueGoals do
   @moduledoc false
   use Plausible.Billing.Feature,
     name: :revenue_goals,
-    display_name: "Revenue Goals"
+    display_name: "Revenue Goals",
+    free: true
 end
 
 defmodule Plausible.Billing.Feature.Goals do
@@ -193,7 +195,8 @@ defmodule Plausible.Billing.Feature.Props do
   use Plausible.Billing.Feature,
     name: :props,
     display_name: "Custom Properties",
-    toggle_field: :props_enabled
+    toggle_field: :props_enabled,
+    free: true
 end
 
 defmodule Plausible.Billing.Feature.StatsAPI do
@@ -202,5 +205,6 @@ defmodule Plausible.Billing.Feature.StatsAPI do
   @moduledoc false
   use Plausible.Billing.Feature,
     name: :stats_api,
-    display_name: "Stats API"
+    display_name: "Stats API",
+    free: true
 end

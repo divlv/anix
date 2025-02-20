@@ -3,7 +3,7 @@ name: Check spelling
 on:
   pull_request:
   push:
-    branches: [ master ]
+    branches: [ master_DISABLED ]
   merge_group:
 
 jobs:

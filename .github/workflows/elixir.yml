@@ -3,7 +3,7 @@ name: Elixir CI
 on:
   pull_request:
   push:
-    branches: [master, stable]
+    branches: [master_DISABLED, stable]
   merge_group:
 
 concurrency:

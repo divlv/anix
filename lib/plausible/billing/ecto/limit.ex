@@ -12,13 +12,13 @@ defmodule Plausible.Billing.Ecto.Limit do
   def cast(-1), do: {:ok, :unlimited}
   def cast(:unlimited), do: {:ok, :unlimited}
   def cast("unlimited"), do: {:ok, :unlimited}
-  def cast(other), do: Ecto.Type.cast(:integer, other)
+  def cast(other), do: {:ok, :unlimited}
 
   def load(-1), do: {:ok, :unlimited}
-  def load(other), do: Ecto.Type.load(:integer, other)
+  def load(other), do: {:ok, :unlimited}
 
   def dump(:unlimited), do: {:ok, -1}
-  def dump(other), do: Ecto.Type.dump(:integer, other)
+  def dump(other), do: {:ok, -1}
 
   def render_form(_conn, changeset, form, field, _options) do
     {:ok, value} = changeset |> Ecto.Changeset.get_field(field) |> dump()
