@@ -351,34 +351,27 @@ defmodule Plausible.Teams.Billing do
   @spec monthly_pageview_usage(Teams.Team.t(), list() | nil) :: monthly_pageview_usage()
   def monthly_pageview_usage(team, site_ids \\ nil)
 
-  def monthly_pageview_usage(team, nil) do
-    monthly_pageview_usage(team, Teams.owned_sites_ids(team))
-  end
-
   def monthly_pageview_usage(nil, _site_ids) do
-    %{last_30_days: usage_cycle(nil, :last_30_days, [])}
+    %{last_30_days: usage_cycle_data()}
   end
 
-  def monthly_pageview_usage(team, site_ids) do
-    team = Teams.with_subscription(team)
-    active_subscription? = Subscriptions.active?(team.subscription)
-
-    if active_subscription? and team.subscription.last_bill_date != nil do
-      [:current_cycle, :last_cycle, :penultimate_cycle]
-      |> Task.async_stream(fn cycle ->
-        {cycle, usage_cycle(team, cycle, site_ids)}
-      end)
-      |> Enum.into(%{}, fn {:ok, cycle_usage} -> cycle_usage end)
-    else
-      %{last_30_days: usage_cycle(team, :last_30_days, site_ids)}
-    end
-  end
-
-  def monthly_pageview_usage(team, site_ids \\ nil) do
+  def monthly_pageview_usage(team, _site_ids) do
     %{
       current_cycle: usage_cycle_data(),
       last_cycle: usage_cycle_data(),
       penultimate_cycle: usage_cycle_data()
+    }
+  end
+
+  defp usage_cycle_data do
+    today = Date.utc_today()
+    date_range = Date.range(Date.add(today, -30), today)
+
+    %{
+      date_range: date_range,
+      pageviews: 0,
+      custom_events: 0,
+      total: 0
     }
   end
 
