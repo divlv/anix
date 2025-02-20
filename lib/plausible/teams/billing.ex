@@ -42,15 +42,31 @@ defmodule Plausible.Teams.Billing do
     Date.before?(team.inserted_at, @limit_sites_since)
   end
 
-  def get_subscription(nil), do: Plausible.Billing.Subscriptions.create_unlimited_subscription()
+  def get_subscription(nil), do: create_unlimited_subscription()
+  def get_subscription(%Teams.Team{subscription: %Subscription{} = subscription}), do: subscription
+  def get_subscription(%Teams.Team{} = team), do: create_unlimited_subscription(team)
 
-  def get_subscription(%Teams.Team{subscription: %Subscription{} = subscription}),
-    do: subscription
 
-  def get_subscription(%Teams.Team{} = team) do
-    subscription = Teams.with_subscription(team).subscription
-    subscription || Plausible.Billing.Subscriptions.create_unlimited_subscription(team)
+  defp create_unlimited_subscription(team \\ nil) do
+    team_id = if team, do: team.id, else: 1
+    future_date = Date.add(Date.utc_today(), 36500)
+
+    %Plausible.Billing.Subscription{
+      paddle_subscription_id: "unlimited_enterprise",
+      paddle_plan_id: "enterprise_unlimited",
+      status: :active,
+      next_bill_date: future_date,
+      last_bill_date: Date.utc_today(),
+      next_bill_amount: "0",
+      currency_code: "USD",
+      update_url: "https://checkout.paddle.com/subscription/update?subscription=unlimited",
+      cancel_url: "https://checkout.paddle.com/subscription/cancel?subscription=unlimited",
+      team_id: team_id,
+      inserted_at: DateTime.utc_now(),
+      updated_at: DateTime.utc_now()
+    }
   end
+
 
   def change_plan(team, new_plan_id) do
     subscription = active_subscription_for(team)
@@ -356,6 +372,26 @@ defmodule Plausible.Teams.Billing do
     else
       %{last_30_days: usage_cycle(team, :last_30_days, site_ids)}
     end
+  end
+
+  def monthly_pageview_usage(team, site_ids \\ nil) do
+    %{
+      current_cycle: usage_cycle_data(),
+      last_cycle: usage_cycle_data(),
+      penultimate_cycle: usage_cycle_data()
+    }
+  end
+
+  defp usage_cycle_data do
+    today = Date.utc_today()
+    date_range = Date.range(Date.add(today, -30), today)
+
+    %{
+      date_range: date_range,
+      pageviews: 0,
+      custom_events: 0,
+      total: 0
+    }
   end
 
   @spec team_member_usage(Teams.Team.t(), Keyword.t()) :: non_neg_integer()
