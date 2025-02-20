@@ -42,13 +42,14 @@ defmodule Plausible.Teams.Billing do
     Date.before?(team.inserted_at, @limit_sites_since)
   end
 
-  def get_subscription(nil), do: nil
+  def get_subscription(nil), do: Plausible.Billing.Subscriptions.create_unlimited_subscription()
 
   def get_subscription(%Teams.Team{subscription: %Subscription{} = subscription}),
     do: subscription
 
   def get_subscription(%Teams.Team{} = team) do
-    Teams.with_subscription(team).subscription
+    subscription = Teams.with_subscription(team).subscription
+    subscription || Plausible.Billing.Subscriptions.create_unlimited_subscription(team)
   end
 
   def change_plan(team, new_plan_id) do
@@ -112,20 +113,18 @@ defmodule Plausible.Teams.Billing do
     {enterprise_plan, Plausible.Billing.Plans.get_price_for(enterprise_plan, customer_ip)}
   end
 
-  def has_active_subscription?(nil), do: false
+  def has_active_subscription?(nil), do: true
 
   def has_active_subscription?(team) do
-    team
-    |> active_subscription_query()
-    |> Repo.exists?()
+    subscription = get_subscription(team)
+    Plausible.Billing.Subscriptions.active?(subscription)
   end
 
-  def active_subscription_for(nil), do: nil
+  def active_subscription_for(nil), do: Plausible.Billing.Subscriptions.create_unlimited_subscription()
 
   def active_subscription_for(team) do
-    team
-    |> active_subscription_query()
-    |> Repo.one()
+    subscription = get_subscription(team)
+    if Plausible.Billing.Subscriptions.active?(subscription), do: subscription, else: nil
   end
 
   @spec check_needs_to_upgrade(Teams.Team.t() | nil) ::
